@@ -1,0 +1,44 @@
+/* Digital Journal Design System Styles */
+:root {
+  --brand-primary: #8b5cf6;
+  --brand-gradient: linear-gradient(135deg, #7c3aed, #4f46e5);
+  --glass-bg-light: rgba(255, 255, 255, 0.85);
+  --glass-border-light: rgba(226, 232, 240, 0.8);
+  --text-primary-light: #0f172a;
+}
+
+.dark {
+  --glass-bg-dark: rgba(17, 24, 39, 0.75);
+  --glass-border-dark: rgba(255, 255, 255, 0.08);
+  --text-primary-dark: #f8fafc;
+}
+
+/* Glassmorphism Surface Effect */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ambient glow orb decoration */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}

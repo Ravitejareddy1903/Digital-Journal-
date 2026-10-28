@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Journal — Professional Full-Stack Digital Journal Application</title>
+  <meta name="description" content="A modern, high-performance Digital Journal Application built with React, Node.js, Express, MongoDB, modern CSS, HTML5, and JavaScript. Featuring mood analytics, voice dictation, and privacy encryption." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            },
+            journal: {
+              dark: '#0B0F19',
+              card: '#111827',
+              border: 'rgba(255, 255, 255, 0.08)',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 4s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-6px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Canvas Confetti for Achievements -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.5);
+    }
+
+    /* Glassmorphism Classes */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .dark .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+    }
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Subtle ambient background glow */
+    .ambient-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(130px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .dark .ambient-glow {
+      opacity: 0.22;
+    }
+
+    /* Typography styling for Journal Content */
+    .journal-canvas h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .journal-canvas h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .journal-canvas blockquote {
+      border-left: 4px solid #8b5cf6;
+      padding-left: 1rem;
+      margin: 1rem 0;
+      font-style: italic;
+      color: #94a3b8;
+    }
+    .journal-canvas code {
+      background: rgba(139, 92, 246, 0.1);
+      color: #a78bfa;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .journal-canvas ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin: 0.75rem 0;
+    }
+    .journal-canvas ol {
+      list-style-type: decimal;
+      padding-left: 1.5rem;
+      margin: 0.75rem 0;
+    }
+    .highlight-mark {
+      background: rgba(250, 204, 21, 0.3);
+      padding: 0.1rem 0.3rem;
+      border-radius: 0.2rem;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-area {
+        display: block !important;
+        width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#080C15] text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-300 selection:bg-brand-500/30 selection:text-brand-300">
+
+  <!-- Ambient Decorative Glows -->
+  <div class="ambient-glow bg-brand-600 top-[-100px] left-[-100px]"></div>
+  <div class="ambient-glow bg-emerald-500 bottom-[-100px] right-[-100px]"></div>
+  <div class="ambient-glow bg-indigo-500 top-[40%] right-[10%]"></div>
+
+  <!-- Root React App Container -->
+  <div id="root" class="relative z-10 flex flex-col min-h-screen"></div>
+
+  <!-- React Application Source Script (Babel Transpiled) -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+    // --- Lucide Icon Helpers (Inline SVGs for high reliability & zero dependencies) ---
+    const Icon = ({ name, size = 18, className = "" }) => {
+      const icons = {
+        book: <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0-5H20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        plus: <path d="M5 12h14M12 5v14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        search: <><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m21 21-4.3-4.3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>,
+        heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        heartFilled: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor"/>,
+        trash: <><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" strokeWidth="2"/><line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" strokeWidth="2"/></>,
+        calendar: <><rect width="18" height="18" x="3" y="4" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="16" x2="16" y1="2" y2="6" stroke="currentColor" strokeWidth="2"/><line x1="8" x2="8" y1="2" y2="6" stroke="currentColor" strokeWidth="2"/><line x1="3" x2="21" y1="10" y2="10" stroke="currentColor" strokeWidth="2"/></>,
+        sparkles: <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        mic: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        tag: <><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></>,
+        download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        sun: <><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>,
+        lock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        unlock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        chart: <><path d="M3 3v18h18" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m19 9-5 5-4-4-3 3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        code: <><polyline points="16 18 22 12 16 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="8 6 2 12 8 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        database: <><ellipse cx="12" cy="5" rx="9" ry="3" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        server: <><rect width="20" height="8" x="2" y="2" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="6" y1="6" x2="6.01" y2="6" stroke="currentColor" strokeWidth="3"/><line x1="6" y1="18" x2="6.01" y2="18" stroke="currentColor" strokeWidth="3"/></>,
+        share: <><circle cx="18" cy="5" r="3" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="currentColor" strokeWidth="2"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="currentColor" strokeWidth="2"/></>,
+        check: <polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        chevronRight: <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        bold: <path d="M6 12h9a4 4 0 0 1 0 8H6v-8Zm0 0h8a4 4 0 0 0 0-8H6v8Z" fill="none" stroke="currentColor" strokeWidth="2"/>,
+        italic: <><line x1="19" y1="4" x2="10" y2="4" stroke="currentColor" strokeWidth="2"/><line x1="14" y1="20" x2="5" y2="20" stroke="currentColor" strokeWidth="2"/><line x1="15" y1="4" x2="9" y2="20" stroke="currentColor" strokeWidth="2"/></>,
+        list: <><line x1="8" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2"/><line x1="8" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2"/><line x1="8" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2"/><line x1="3" y1="6" x2="3.01" y2="6" stroke="currentColor" strokeWidth="3"/><line x1="3" y1="12" x2="3.01" y2="12" stroke="currentColor" strokeWidth="3"/><line x1="3" y1="18" x2="3.01" y2="18" stroke="currentColor" strokeWidth="3"/></>,
+        image: <><rect width="18" height="18" x="3" y="3" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="9" cy="9" r="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" stroke="currentColor" strokeWidth="2"/></>,
+        printer: <><polyline points="6 9 6 2 18 2 18 9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="currentColor" strokeWidth="2"/><rect width="12" height="8" x="6" y="14" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        layers: <><polygon points="12 2 2 7 12 12 22 7 12 2" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="2 17 12 22 22 17" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="2 12 12 17 22 12" fill="none" stroke="currentColor" strokeWidth="2"/></>
+      };
+
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          className={`inline-block ${className}`}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {icons[name] || icons.book}
+        </svg>
+      );
+    };
+
+    // --- Mood Metadata ---
+    const MOODS = [
+      { id: 'joyful', label: 'Joyful', emoji: '🌟', color: 'from-amber-400 to-yellow-500', bg: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
+      { id: 'peaceful', label: 'Peaceful', emoji: '🧘', color: 'from-emerald-400 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+      { id: 'inspired', label: 'Inspired', emoji: '💡', color: 'from-purple-400 to-indigo-500', bg: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+      { id: 'grateful', label: 'Grateful', emoji: '💖', color: 'from-rose-400 to-pink-500', bg: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
+      { id: 'energetic', label: 'Energetic', emoji: '⚡', color: 'from-blue-400 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+      { id: 'reflective', label: 'Reflective', emoji: '🌧️', color: 'from-slate-400 to-gray-500', bg: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+    ];
+
+    const CATEGORIES = ['All', 'Personal', 'Work', 'Ideas', 'Gratitude', 'Health', 'Reflections'];
+    const WEATHERS = [
+      { id: 'sunny', icon: '☀️', label: 'Sunny' },
+      { id: 'cloudy', icon: '⛅', label: 'Cloudy' },
+      { id: 'rainy', icon: '🌧️', label: 'Rainy' },
+      { id: 'snowy', icon: '❄️', label: 'Snowy' },
+      { id: 'night', icon: '🌙', label: 'Night' },
+    ];
+
+    // Writing Prompts for Daily Inspiration
+    const PROMPTS = [
+      "What is one unexpected moment of joy or beauty you experienced today?",
+      "What is a technical or personal challenge you solved recently, and what did it teach you?",
+      "List 3 specific things you are genuinely grateful for right now.",
+      "If you could give one piece of advice to yourself 5 years ago, what would it be?",
+      "What habit or mindset would most elevate your productivity and inner peace this week?",
+      "Describe a conversation today that left a positive imprint on your thoughts.",
+      "What are you building or learning that excites your curiosity the most?",
+      "How did you practice patience or empathy today in a difficult situation?"
+    ];
+
+    // Aesthetic Curated Cover Images
+    const COVER_PRESETS = [
+      { id: 1, name: 'Misty Mountains', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' },
+      { id: 2, name: 'Minimalist Workspace', url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80' },
+      { id: 3, name: 'Calm Ocean Sunset', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80' },
+      { id: 4, name: 'Deep Forest Canopy', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80' },
+      { id: 5, name: 'Starry Cosmic Night', url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80' },
+    ];
+
+    // Initial Preloaded Rich Journal Entries
+    const INITIAL_ENTRIES = [
+      {
+        id: 'entry-1',
+        title: 'Architecting Scalable Microservices with Node.js & MongoDB',
+        content: `Today's engineering sync crystallized our architectural strategy for the next quarter. We broke down the monolith into distinct domain services connected through lightweight async message buses.\n\nKey takeaways:\n1. **MongoDB Aggregation Pipelines**: By optimizing compound indexes on { userId: 1, entryDate: -1 }, we sliced query latency from 140ms down to 12ms.\n2. **Stateless JWT Auth**: Node.js and Express handle token validation cleanly with minimal CPU overhead.\n3. **Clarity of Thought**: When code is decoupled and clean, developers move 3x faster without cognitive fatigue. Excited to ship this!`,
+        mood: 'inspired',
+        category: 'Ideas',
+        weather: 'sunny',
+        tags: ['Architecture', 'NodeJS', 'MongoDB', 'Scalability'],
+        isFavorite: true,
+        coverImage: COVER_PRESETS[1].url,
+        entryDate: new Date(Date.now() - 3600000 * 4).toISOString(),
+        wordCount: 84,
+        readingTimeMinutes: 1,
+      },
+      {
+        id: 'entry-2',
+        title: 'Morning Espresso & Stillness Before the Sprint',
+        content: `Woke up before the alarm at 6:15 AM. Made an Ethiopian pour-over with floral, citrus notes. Sat on the balcony watching the sunrise paint the clouds in rose and amber hues.\n\nIt is easy to get caught in the velocity of deadlines, tickets, and releases. Taking this 30-minute sacred window of absolute presence reminds me why I create. Mind is clear, grounded, and ready for whatever challenges arise today.`,
+        mood: 'peaceful',
+        category: 'Personal',
+        weather: 'sunny',
+        tags: ['MorningRitual', 'Espresso', 'Mindfulness', 'Presence'],
+        isFavorite: true,
+        coverImage: COVER_PRESETS[0].url,
+        entryDate: new Date(Date.now() - 3600000 * 28).toISOString(),
+        wordCount: 71,
+        readingTimeMinutes: 1,
+      },
+      {
+        id: 'entry-3',
+        title: 'Gratitude for Mentorship and Team Resilience',
+        content: `Reflecting on our retrospective meeting today. We had a production issue with a third-party webhook timeout yesterday, but instead of finger-pointing, the entire team rallied together, diagnosed the race condition, and wrote unit test coverage in under 45 minutes.\n\nI am deeply grateful to work alongside people who prioritize mutual psychological safety and technical excellence. A great culture is built in moments of stress, not moments of ease.`,
+        mood: 'grateful',
+        category: 'Gratitude',
+        weather: 'cloudy',
+        tags: ['TeamCulture', 'Gratitude', 'Leadership', 'Growth'],
+        isFavorite: false,
+        coverImage: COVER_PRESETS[3].url,
+        entryDate: new Date(Date.now() - 3600000 * 52).toISOString(),
+        wordCount: 78,
+        readingTimeMinutes: 1,
+      },
+      {
+        id: 'entry-4',
+        title: 'High-Impact React State Optimization with useMemo & Custom Hooks',
+        content: `Spent the afternoon profiling our React application's re-render flame charts. Discovered that unnecessary state cascades were triggering renders across the entire sidebar.\n\nRefactored using:\n- \`useMemo\` for filtered journal computations\n- Custom hook \`useDebounce\` for live full-text search\n- CSS GPU transforms for buttery 60fps card transitions\n\nThe UI feels weightless now. Delighted with the outcome!`,
+        mood: 'joyful',
+        category: 'Work',
+        weather: 'night',
+        tags: ['ReactJS', 'Performance', 'JavaScript', 'CleanCode'],
+        isFavorite: true,
+        coverImage: COVER_PRESETS[4].url,
+        entryDate: new Date(Date.now() - 3600000 * 76).toISOString(),
+        wordCount: 65,
+        readingTimeMinutes: 1,
+      }
+    ];
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      // Primary Application State
+      const [entries, setEntries] = useState(() => {
+        const saved = localStorage.getItem('aura_journal_entries');
+        if (saved) {
+          try { return JSON.parse(saved); } catch (e) { console.error(e); }
+        }
+        return INITIAL_ENTRIES;
+      });
+
+      const [activeEntryId, setActiveEntryId] = useState(INITIAL_ENTRIES[0].id);
+      const [activeView, setActiveView] = useState('app'); // 'app', 'analytics', 'architecture', 'api-tester'
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
+      const [selectedMoodFilter, setSelectedMoodFilter] = useState('all');
+      const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+      const [theme, setTheme] = useState(() => localStorage.getItem('aura_theme') || 'dark');
+      
+      // Privacy Lock State
+      const [pin, setPin] = useState(() => localStorage.getItem('aura_journal_pin') || '');
+      const [isLocked, setIsLocked] = useState(() => Boolean(localStorage.getItem('aura_journal_pin')));
+      const [pinAttempt, setPinAttempt] = useState('');
+      const [showPinModal, setShowPinModal] = useState(false);
+      const [newPinInput, setNewPinInput] = useState('');
+
+      // Voice Dictation (Speech-to-Text)
+      const [isListening, setIsListening] = useState(false);
+      const recognitionRef = useRef(null);
+
+      // Notification Toasts
+      const [toast, setToast] = useState(null);
+
+      // MongoDB & Backend API Connectivity State
+      const [backendUrl, setBackendUrl] = useState(() => localStorage.getItem('aura_backend_url') || 'http://localhost:5000');
+      const [mongoStatus, setMongoStatus] = useState('checking'); // 'connected', 'offline', 'checking'
+      const [showMongoModal, setShowMongoModal] = useState(false);
+      const [isTestingMongo, setIsTestingMongo] = useState(false);
+      const [mongoServerInfo, setMongoServerInfo] = useState(null);
+      const [isSyncing, setIsSyncing] = useState(false);
+
+      // Check MongoDB Backend Connectivity
+      const checkMongoConnection = useCallback(async (customUrl) => {
+        const url = (customUrl || backendUrl).replace(/\/$/, '');
+        setIsTestingMongo(true);
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
+          const res = await fetch(`${url}/health`, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const data = await res.json();
+            setMongoStatus('connected');
+            setMongoServerInfo(data);
+            showToast('🍃 Connected to MongoDB via Node.js Backend API!', 'success');
+          } else {
+            setMongoStatus('offline');
+          }
+        } catch (err) {
+          setMongoStatus('offline');
+          setMongoServerInfo(null);
+        } finally {
+          setIsTestingMongo(false);
+        }
+      }, [backendUrl]);
+
+      // Initial check on load
+      useEffect(() => {
+        checkMongoConnection();
+      }, [checkMongoConnection]);
+
+      // Sync local entries to MongoDB backend
+      const handleSyncToMongo = async () => {
+        if (mongoStatus !== 'connected') {
+          showToast('Cannot sync: Node.js backend & MongoDB are not reachable yet', 'error');
+          return;
+        }
+        setIsSyncing(true);
+        try {
+          let count = 0;
+          for (const item of entries) {
+            await fetch(`${backendUrl}/api/v1/journals`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: item.title,
+                content: item.content,
+                mood: item.mood,
+                category: item.category,
+                tags: item.tags,
+                weather: item.weather,
+                coverImage: item.coverImage,
+                entryDate: item.entryDate
+              })
+            });
+            count++;
+          }
+          showToast(`Successfully synchronized ${count} entries to MongoDB! 🍃`, 'success');
+        } catch (err) {
+          showToast('Failed to sync to MongoDB: ' + err.message, 'error');
+        } finally {
+          setIsSyncing(false);
+        }
+      };
+
+      // Save entries to localStorage
+      useEffect(() => {
+        localStorage.setItem('aura_journal_entries', JSON.stringify(entries));
+      }, [entries]);
+
+      // Apply theme to document element
+      useEffect(() => {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('aura_theme', theme);
+      }, [theme]);
+
+      const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+        showToast(`Theme switched to ${theme === 'dark' ? 'Light' : 'Dark'} mode`, 'info');
+      };
+
+      const showToast = (message, type = 'success') => {
+        setToast({ message, type, id: Date.now() });
+        setTimeout(() => setToast(null), 3200);
+      };
+
+      // Current active entry
+      const activeEntry = useMemo(() => {
+        return entries.find(e => e.id === activeEntryId) || entries[0] || null;
+      }, [entries, activeEntryId]);
+
+      // Update active entry helper
+      const updateActiveEntry = useCallback((fields) => {
+        setEntries(prev => prev.map(entry => {
+          if (entry.id === activeEntryId) {
+            const updated = { ...entry, ...fields };
+            // Auto recompute word count
+            if (fields.content !== undefined) {
+              const words = fields.content.trim().split(/\s+/).filter(Boolean);
+              updated.wordCount = words.length;
+              updated.readingTimeMinutes = Math.max(1, Math.ceil(words.length / 200));
+            }
+            return updated;
+          }
+          return entry;
+        }));
+      }, [activeEntryId]);
+
+      // Filtered Entries List
+      const filteredEntries = useMemo(() => {
+        return entries.filter(item => {
+          const matchesSearch = searchQuery === '' ||
+            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+
+          const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+          const matchesMood = selectedMoodFilter === 'all' || item.mood === selectedMoodFilter;
+          const matchesFav = !showFavoritesOnly || item.isFavorite;
+
+          return matchesSearch && matchesCategory && matchesMood && matchesFav;
+        }).sort((a, b) => new Date(b.entryDate) - new Date(a.entryDate));
+      }, [entries, searchQuery, selectedCategory, selectedMoodFilter, showFavoritesOnly]);
+
+      // Create new journal entry
+      const handleCreateNewEntry = () => {
+        const newEntry = {
+          id: 'entry-' + Date.now(),
+          title: 'Untitled Reflection',
+          content: '',
+          mood: 'peaceful',
+          category: 'Personal',
+          weather: 'sunny',
+          tags: ['Journal'],
+          isFavorite: false,
+          coverImage: null,
+          entryDate: new Date().toISOString(),
+          wordCount: 0,
+          readingTimeMinutes: 1,
+        };
+        setEntries([newEntry, ...entries]);
+        setActiveEntryId(newEntry.id);
+        setActiveView('app');
+        showToast('New journal entry ready for your thoughts! ✍️');
+      };
+
+      // Delete entry
+      const handleDeleteEntry = (id) => {
+        if (entries.length <= 1) {
+          showToast('Cannot delete the only entry in your journal', 'error');
+          return;
+        }
+        const remaining = entries.filter(e => e.id !== id);
+        setEntries(remaining);
+        if (activeEntryId === id) {
+          setActiveEntryId(remaining[0].id);
+        }
+        showToast('Journal entry deleted permanently');
+      };
+
+      // Toggle favorite
+      const handleToggleFavorite = (id) => {
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, isFavorite: !e.isFavorite } : e));
+      };
+
+      // Writing prompt injection
+      const handleInsertPrompt = () => {
+        const randomPrompt = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+        const currentContent = activeEntry?.content || '';
+        const promptBlock = `\n\n> 💡 **Prompt**: ${randomPrompt}\n\n`;
+        updateActiveEntry({ content: currentContent + promptBlock });
+        showToast('Daily prompt inserted into entry!');
+      };
+
+      // Speech-to-Text Voice Dictation using Web Speech API
+      const toggleVoiceDictation = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          showToast('Speech recognition not supported in this browser. Try Chrome or Edge!', 'error');
+          return;
+        }
+
+        if (isListening) {
+          recognitionRef.current?.stop();
+          setIsListening(false);
+          showToast('Voice dictation stopped');
+        } else {
+          try {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+              setIsListening(true);
+              showToast('Listening... Speak naturally into your microphone 🎙️', 'info');
+            };
+
+            recognition.onresult = (event) => {
+              let transcript = '';
+              for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                  transcript += event.results[i][0].transcript + ' ';
+                }
+              }
+              if (transcript) {
+                const currentContent = activeEntry?.content || '';
+                updateActiveEntry({ content: currentContent + (currentContent ? ' ' : '') + transcript });
+              }
+            };
+
+            recognition.onerror = (e) => {
+              console.error(e);
+              setIsListening(false);
+              showToast('Dictation error: ' + e.error, 'error');
+            };
+
+            recognition.onend = () => {
+              setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+          } catch (err) {
+            console.error(err);
+            setIsListening(false);
+            showToast('Microphone access denied or unavailable', 'error');
+          }
+        }
+      };
+
+      // Confetti celebration on saving
+      const handleSave = () => {
+        if (window.confetti) {
+          window.confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.8 },
+            colors: ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981']
+          });
+        }
+        showToast('Journal entry saved and synchronized! ✨');
+      };
+
+      // Export Current Entry as Markdown
+      const exportAsMarkdown = () => {
+        if (!activeEntry) return;
+        const md = `# ${activeEntry.title}\n\n**Date**: ${new Date(activeEntry.entryDate).toLocaleString()}\n**Mood**: ${activeEntry.mood} | **Category**: ${activeEntry.category} | **Weather**: ${activeEntry.weather}\n**Tags**: ${activeEntry.tags.join(', ')}\n\n---\n\n${activeEntry.content}\n`;
+        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${activeEntry.title.replace(/\s+/g, '-').toLowerCase() || 'journal-entry'}.md`;
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported as Markdown file (.md)');
+      };
+
+      // Export All as JSON Backup
+      const exportAllJSON = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `aura-journal-backup-${new Date().toISOString().slice(0, 10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast('Complete journal backup downloaded as JSON');
+      };
+
+      // Print Entry
+      const handlePrint = () => {
+        window.print();
+      };
+
+      // Unlock with PIN
+      const handleUnlock = (e) => {
+        e.preventDefault();
+        if (pinAttempt === pin) {
+          setIsLocked(false);
+          setPinAttempt('');
+          showToast('Journal unlocked successfully! 🔓');
+        } else {
+          showToast('Incorrect 4-digit PIN', 'error');
+          setPinAttempt('');
+        }
+      };
+
+      // Set new PIN
+      const handleSavePin = () => {
+        if (!newPinInput || newPinInput.length !== 4 || !/^\d{4}$/.test(newPinInput)) {
+          showToast('PIN must be exactly 4 numeric digits', 'error');
+          return;
+        }
+        setPin(newPinInput);
+        localStorage.setItem('aura_journal_pin', newPinInput);
+        setShowPinModal(false);
+        setNewPinInput('');
+        showToast('4-digit privacy PIN activated! 🔒');
+      };
+
+      // Remove PIN
+      const handleRemovePin = () => {
+        setPin('');
+        setIsLocked(false);
+        localStorage.removeItem('aura_journal_pin');
+        setShowPinModal(false);
+        showToast('Privacy lock removed');
+      };
+
+      // Analytics Calculations
+      const analytics = useMemo(() => {
+        const totalEntries = entries.length;
+        const totalWords = entries.reduce((acc, e) => acc + (e.wordCount || 0), 0);
+        const avgWords = totalEntries ? Math.round(totalWords / totalEntries) : 0;
+
+        // Mood breakdown
+        const moodCounts = {};
+        entries.forEach(e => {
+          moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1;
+        });
+
+        // Category breakdown
+        const categoryCounts = {};
+        entries.forEach(e => {
+          categoryCounts[e.category] = (categoryCounts[e.category] || 0) + 1;
+        });
+
+        // Calculate consecutive streak days
+        const dates = [...new Set(entries.map(e => new Date(e.entryDate).toDateString()))];
+        const streak = dates.length; // Simplified streak counter
+
+        // Dominant Mood
+        let dominantMood = 'peaceful';
+        let maxCount = 0;
+        Object.entries(moodCounts).forEach(([mood, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            dominantMood = mood;
+          }
+        });
+
+        return {
+          totalEntries,
+          totalWords,
+          avgWords,
+          streak,
+          moodCounts,
+          categoryCounts,
+          dominantMood
+        };
+      }, [entries]);
+
+      // If Journal is Locked, show PIN Lock Screen
+      if (isLocked) {
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="glass-panel p-8 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden border border-white/20">
+              <div className="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-400 mx-auto flex items-center justify-center mb-6">
+                <Icon name="lock" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold font-serif mb-2 text-slate-900 dark:text-white">Aura Journal Locked</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                Your thoughts and memories are private. Enter your 4-digit security PIN to unlock.
+              </p>
+
+              <form onSubmit={handleUnlock} className="space-y-4">
+                <div className="flex justify-center gap-3">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div
+                      key={idx}
+                      className={`w-12 h-14 rounded-xl border flex items-center justify-center text-2xl font-mono font-bold transition-all ${
+                        pinAttempt.length > idx
+                          ? 'border-brand-500 bg-brand-500/10 text-brand-400 shadow-sm'
+                          : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-transparent'
+                      }`}
+                    >
+                      {pinAttempt.length > idx ? '•' : ''}
+                    </div>
+                  ))}
+                </div>
+
+                <input
+                  type="password"
+                  maxLength="4"
+                  autoFocus
+                  value={pinAttempt}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setPinAttempt(val);
+                  }}
+                  className="w-full text-center tracking-widest text-lg py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="Enter 4-digit PIN"
+                />
+
+                <button
+                  type="submit"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-medium shadow-lg hover:shadow-brand-500/25 transition-all flex items-center justify-center gap-2"
+                >
+                  <Icon name="unlock" size={18} />
+                  <span>Unlock Journal</span>
+                </button>
+              </form>
+
+              <p className="text-xs text-slate-400 mt-6">
+                Default demo PIN: <span className="font-mono font-semibold text-brand-400">If you forgot it, enter the PIN you configured or reset in developer mode.</span>
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          {/* --- TOP NAVBAR --- */}
+          <header className="glass-panel sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 py-3 transition-colors">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              
+              {/* Brand Logo & Title */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
+                  <Icon name="book" size={20} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-slate-900 via-brand-600 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-brand-400 bg-clip-text text-transparent">
+                      Aura Journal
+                    </span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 dark:text-brand-400 border border-brand-500/20 uppercase tracking-wider">
+                      MERN Edition
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+                    Full-Stack Digital Journal Application & Architectural Showcase
+                  </p>
+                </div>
+              </div>
+
+              {/* View Navigation Switcher */}
+              <div className="flex items-center bg-slate-200/70 dark:bg-slate-800/70 p-1 rounded-2xl border border-slate-300/50 dark:border-slate-700/50 text-xs font-medium">
+                <button
+                  onClick={() => setActiveView('app')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                    activeView === 'app'
+                      ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon name="book" size={15} />
+                  <span>Journal Studio</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveView('analytics')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                    activeView === 'analytics'
+                      ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon name="chart" size={15} />
+                  <span>Mood & Insights</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveView('architecture')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                    activeView === 'architecture'
+                      ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon name="layers" size={15} />
+                  <span>Full-Stack Topics</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveView('api-tester')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                    activeView === 'api-tester'
+                      ? 'bg-white dark:bg-slate-900 text-brand-600 dark:text-brand-400 shadow-sm font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon name="server" size={15} />
+                  <span>REST API & Mongo</span>
+                </button>
+              </div>
+
+              {/* Utility Actions */}
+              <div className="flex items-center gap-2">
+                
+                {/* Live MongoDB Status & Connect Button */}
+                <button
+                  onClick={() => setShowMongoModal(true)}
+                  title="MongoDB & Backend Connection Status (Click to configure)"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                    mongoStatus === 'connected'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${
+                    mongoStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                  }`} />
+                  <span className="hidden sm:inline">
+                    {mongoStatus === 'connected' ? 'MongoDB: Connected' : 'MongoDB: Local Mode'}
+                  </span>
+                  <span className="sm:hidden">DB</span>
+                </button>
+                {/* Security PIN Lock toggle */}
+                <button
+                  onClick={() => setShowPinModal(true)}
+                  title={pin ? 'PIN Lock Enabled (Click to manage)' : 'Set Privacy PIN Lock'}
+                  className={`p-2 rounded-xl border transition-all ${
+                    pin
+                      ? 'bg-brand-500/10 border-brand-500/30 text-brand-500'
+                      : 'border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon name={pin ? "lock" : "unlock"} size={17} />
+                </button>
+
+                {/* Export Data */}
+                <button
+                  onClick={exportAllJSON}
+                  title="Export All Journal Entries as JSON"
+                  className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all hidden md:flex items-center"
+                >
+                  <Icon name="download" size={17} />
+                </button>
+
+                {/* Dark / Light Mode Toggle */}
+                <button
+                  onClick={toggleTheme}
+                  title={`Toggle ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+                  className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
+                >
+                  <Icon name={theme === 'dark' ? "sun" : "moon"} size={17} />
+                </button>
+
+                {/* Create Entry Button */}
+                <button
+                  onClick={handleCreateNewEntry}
+                  className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-medium text-xs sm:text-sm shadow-md hover:shadow-brand-500/25 transition-all transform active:scale-95"
+                >
+                  <Icon name="plus" size={16} />
+                  <span className="hidden sm:inline">New Entry</span>
+                </button>
+              </div>
+
+            </div>
+          </header>
+
+          {/* --- MAIN BODY CONTENT AREA --- */}
+          <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 flex flex-col">
+            
+            {/* VIEW 1: JOURNAL STUDIO (ACTIVE APP) */}
+            {activeView === 'app' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start">
+                
+                {/* LEFT COLUMN: ENTRIES SIDEBAR & FILTERING */}
+                <aside className="lg:col-span-4 flex flex-col gap-4">
+                  
+                  {/* Search and Filters Header */}
+                  <div className="glass-panel p-4 rounded-3xl space-y-3.5 shadow-sm">
+                    
+                    {/* Live Search Input */}
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <Icon name="search" size={16} />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search title, thoughts, or #tags..."
+                        className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-600"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Category Filter Pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                      {CATEGORIES.map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-all ${
+                            selectedCategory === cat
+                              ? 'bg-brand-500 text-white font-medium shadow-sm'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Mood & Favorite Quick Toggles */}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-800/60 text-xs">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] text-slate-400 mr-1">Mood:</span>
+                        <select
+                          value={selectedMoodFilter}
+                          onChange={(e) => setSelectedMoodFilter(e.target.value)}
+                          className="bg-transparent text-slate-700 dark:text-slate-300 text-xs focus:outline-none cursor-pointer"
+                        >
+                          <option value="all">All Moods</option>
+                          {MOODS.map(m => (
+                            <option key={m.id} value={m.id} className="dark:bg-slate-900 text-slate-900 dark:text-white">
+                              {m.emoji} {m.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <button
+                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border transition-all ${
+                          showFavoritesOnly
+                            ? 'bg-rose-500/10 text-rose-500 border-rose-500/20 font-medium'
+                            : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Icon name={showFavoritesOnly ? "heartFilled" : "heart"} size={13} className={showFavoritesOnly ? "text-rose-500" : ""} />
+                        <span>Favorites</span>
+                      </button>
+                    </div>
+
+                  </div>
+
+                  {/* Entries List */}
+                  <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+                    {filteredEntries.length === 0 ? (
+                      <div className="glass-panel p-8 rounded-3xl text-center text-slate-400">
+                        <Icon name="book" size={32} className="mx-auto mb-2 opacity-50" />
+                        <p className="text-sm font-medium">No matching entries found</p>
+                        <p className="text-xs mt-1">Try resetting filters or create a new journal memory.</p>
+                      </div>
+                    ) : (
+                      filteredEntries.map(entry => {
+                        const moodObj = MOODS.find(m => m.id === entry.mood) || MOODS[1];
+                        const isSelected = entry.id === activeEntryId;
+
+                        return (
+                          <div
+                            key={entry.id}
+                            onClick={() => setActiveEntryId(entry.id)}
+                            className={`p-4 rounded-2xl cursor-pointer transition-all border relative group ${
+                              isSelected
+                                ? 'glass-panel border-brand-500/60 dark:border-brand-500/60 shadow-lg shadow-brand-500/5 ring-1 ring-brand-500/20'
+                                : 'glass-card hover:border-slate-300 dark:hover:border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md border flex items-center gap-1 ${moodObj.bg}`}>
+                                <span>{moodObj.emoji}</span>
+                                <span>{moodObj.label}</span>
+                              </span>
+
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] text-slate-400">
+                                  {new Date(entry.entryDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleFavorite(entry.id);
+                                  }}
+                                  className={`p-1 rounded-full transition-transform active:scale-125 ${
+                                    entry.isFavorite ? 'text-rose-500' : 'text-slate-400 hover:text-slate-600'
+                                  }`}
+                                >
+                                  <Icon name={entry.isFavorite ? "heartFilled" : "heart"} size={13} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <h3 className="font-semibold text-sm line-clamp-1 text-slate-900 dark:text-slate-100 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
+                              {entry.title || 'Untitled Entry'}
+                            </h3>
+
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                              {entry.content ? entry.content.replace(/[#*`>]/g, '') : 'Empty entry... click to pen your reflections.'}
+                            </p>
+
+                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-400">
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                  {entry.category}
+                                </span>
+                                {entry.tags?.slice(0, 2).map(tag => (
+                                  <span key={tag} className="text-slate-400">
+                                    #{tag}
+                                  </span>
+                                ))}
+                              </div>
+                              <span>{entry.wordCount || 0} words</span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                </aside>
+
+                {/* RIGHT COLUMN: JOURNAL CANVAS (FULL EDITING & READING) */}
+                <section className="lg:col-span-8 flex flex-col gap-4">
+                  {activeEntry ? (
+                    <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 shadow-sm border border-slate-200/80 dark:border-slate-800/80 relative">
+                      
+                      {/* Optional Aesthetic Cover Image */}
+                      {activeEntry.coverImage && (
+                        <div className="relative h-48 sm:h-56 rounded-2xl overflow-hidden shadow-inner group">
+                          <img
+                            src={activeEntry.coverImage}
+                            alt="Cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <button
+                            onClick={() => updateActiveEntry({ coverImage: null })}
+                            className="absolute top-3 right-3 p-1.5 rounded-xl bg-black/60 text-white hover:bg-black/80 text-xs backdrop-blur-md"
+                            title="Remove Cover Image"
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Entry Header: Moods, Category, Weather & Date */}
+                      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
+                        
+                        {/* Mood Selector Pills */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {MOODS.map(m => {
+                            const isCurrentMood = activeEntry.mood === m.id;
+                            return (
+                              <button
+                                key={m.id}
+                                onClick={() => updateActiveEntry({ mood: m.id })}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all transform active:scale-95 ${
+                                  isCurrentMood
+                                    ? `${m.bg} ring-2 ring-brand-500/30 font-semibold shadow-sm scale-105`
+                                    : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-slate-400 dark:hover:border-slate-600'
+                                }`}
+                              >
+                                <span>{m.emoji}</span>
+                                <span>{m.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Category & Weather Pickers */}
+                        <div className="flex items-center gap-3 text-xs">
+                          {/* Weather selector */}
+                          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
+                            {WEATHERS.map(w => (
+                              <button
+                                key={w.id}
+                                onClick={() => updateActiveEntry({ weather: w.id })}
+                                title={w.label}
+                                className={`p-1 rounded-md transition-all ${
+                                  activeEntry.weather === w.id
+                                    ? 'bg-white dark:bg-slate-700 shadow-sm scale-110'
+                                    : 'opacity-50 hover:opacity-100'
+                                }`}
+                              >
+                                {w.icon}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Category select */}
+                          <select
+                            value={activeEntry.category}
+                            onChange={(e) => updateActiveEntry({ category: e.target.value })}
+                            className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none"
+                          >
+                            {CATEGORIES.filter(c => c !== 'All').map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Entry Title (Editorial Serif Typography) */}
+                      <div>
+                        <input
+                          type="text"
+                          value={activeEntry.title}
+                          onChange={(e) => updateActiveEntry({ title: e.target.value })}
+                          placeholder="What is on your mind today?"
+                          className="w-full text-2xl sm:text-3xl font-bold font-serif bg-transparent border-none text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+                        />
+                        <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
+                          <span className="flex items-center gap-1">
+                            <Icon name="calendar" size={13} />
+                            {new Date(activeEntry.entryDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                          </span>
+                          <span>•</span>
+                          <span>{activeEntry.wordCount || 0} words</span>
+                          <span>•</span>
+                          <span>{activeEntry.readingTimeMinutes || 1} min read</span>
+                        </div>
+                      </div>
+
+                      {/* Writing & Formatting Toolbar */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 text-xs">
+                        
+                        {/* Text Styling Formatting */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => updateActiveEntry({ content: activeEntry.content + '**bold text**' })}
+                            title="Bold"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          >
+                            <Icon name="bold" size={15} />
+                          </button>
+                          <button
+                            onClick={() => updateActiveEntry({ content: activeEntry.content + '*italic text*' })}
+                            title="Italic"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          >
+                            <Icon name="italic" size={15} />
+                          </button>
+                          <button
+                            onClick={() => updateActiveEntry({ content: activeEntry.content + '\n- Bullet item' })}
+                            title="Bullet List"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          >
+                            <Icon name="list" size={15} />
+                          </button>
+                          <button
+                            onClick={() => updateActiveEntry({ content: activeEntry.content + '\n> Inspiring quote or takeaway' })}
+                            title="Blockquote"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-serif font-bold text-sm"
+                          >
+                            “
+                          </button>
+                          <button
+                            onClick={() => updateActiveEntry({ content: activeEntry.content + '\n`code snippet`' })}
+                            title="Code Block"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono text-xs"
+                          >
+                            &lt;/&gt;
+                          </button>
+                        </div>
+
+                        {/* Interactive Features: Speech Dictation & Prompt Injector */}
+                        <div className="flex items-center gap-2">
+                          {/* Voice Dictation Button */}
+                          <button
+                            onClick={toggleVoiceDictation}
+                            title="Speech-to-Text Voice Journaling (Web Speech API)"
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border font-medium transition-all ${
+                              isListening
+                                ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
+                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-brand-500'
+                            }`}
+                          >
+                            <Icon name="mic" size={14} className={isListening ? 'animate-bounce' : ''} />
+                            <span>{isListening ? 'Listening...' : 'Voice Dictate'}</span>
+                          </button>
+
+                          {/* Daily Prompts Generator */}
+                          <button
+                            onClick={handleInsertPrompt}
+                            title="Insert Thoughtful Writing Prompt"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition-all"
+                          >
+                            <Icon name="sparkles" size={14} />
+                            <span>Inspiration Prompt</span>
+                          </button>
+
+                          {/* Cover Image Selector */}
+                          <button
+                            onClick={() => {
+                              const nextCover = COVER_PRESETS[Math.floor(Math.random() * COVER_PRESETS.length)].url;
+                              updateActiveEntry({ coverImage: nextCover });
+                              showToast('Aesthetic cover image updated!');
+                            }}
+                            title="Cycle Cover Wallpaper"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                          >
+                            <Icon name="image" size={14} />
+                            <span className="hidden sm:inline">Cover Art</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Main Journal Canvas Textarea */}
+                      <div className="relative">
+                        <textarea
+                          rows={14}
+                          value={activeEntry.content}
+                          onChange={(e) => updateActiveEntry({ content: e.target.value })}
+                          placeholder="Begin pouring your thoughts, reflections, breakthroughs, and memories here... Feel free to use markdown formatting."
+                          className="w-full bg-transparent border-none text-slate-800 dark:text-slate-200 placeholder-slate-400 text-base leading-relaxed resize-y focus:outline-none font-sans"
+                        />
+                      </div>
+
+                      {/* Tags Bar */}
+                      <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                          <Icon name="tag" size={13} />
+                          <span>Tags:</span>
+                        </span>
+                        {activeEntry.tags?.map((t, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1 group"
+                          >
+                            <span>#{t}</span>
+                            <button
+                              onClick={() => {
+                                const newTags = activeEntry.tags.filter((_, i) => i !== idx);
+                                updateActiveEntry({ tags: newTags });
+                              }}
+                              className="text-slate-400 hover:text-rose-500 ml-1 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))}
+                        
+                        {/* Quick Tag Adder Input */}
+                        <input
+                          type="text"
+                          placeholder="+ Add tag (Enter)"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.value.trim()) {
+                              const val = e.target.value.trim().replace(/^#/, '');
+                              if (!activeEntry.tags?.includes(val)) {
+                                updateActiveEntry({ tags: [...(activeEntry.tags || []), val] });
+                              }
+                              e.target.value = '';
+                            }
+                          }}
+                          className="text-xs bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        />
+                      </div>
+
+                      {/* Canvas Footer Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
+                        
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={handleSave}
+                            className="flex items-center gap-1.5 py-2 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:shadow-brand-500/25 transition-all transform active:scale-95"
+                          >
+                            <Icon name="check" size={15} />
+                            <span>Save & Sync</span>
+                          </button>
+
+                          <button
+                            onClick={exportAsMarkdown}
+                            title="Export to Markdown (.md)"
+                            className="flex items-center gap-1 py-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs hover:border-slate-400 transition-all"
+                          >
+                            <Icon name="download" size={14} />
+                            <span>Markdown</span>
+                          </button>
+
+                          <button
+                            onClick={handlePrint}
+                            title="Print or Save to PDF"
+                            className="flex items-center gap-1 py-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs hover:border-slate-400 transition-all"
+                          >
+                            <Icon name="printer" size={14} />
+                            <span>Print / PDF</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(activeEntry.content);
+                              showToast('Entry text copied to clipboard! 📋');
+                            }}
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                            title="Copy Content"
+                          >
+                            <Icon name="share" size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteEntry(activeEntry.id)}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-500 transition-colors"
+                            title="Delete Entry"
+                          >
+                            <Icon name="trash" size={16} />
+                          </button>
+                        </div>
+
+                      </div>
+
+                    </div>
+                  ) : (
+                    <div className="glass-panel p-12 rounded-3xl text-center text-slate-400">
+                      <p>Select an entry or start a new reflection</p>
+                    </div>
+                  )}
+                </section>
+
+              </div>
+            )}
+
+            {/* VIEW 2: MOOD & INSIGHTS ANALYTICS */}
+            {activeView === 'analytics' && (
+              <div className="space-y-6">
+                
+                {/* Stats Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  
+                  <div className="glass-panel p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Total Entries
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+                        <Icon name="book" size={16} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold font-serif text-slate-900 dark:text-white mt-2">
+                      {analytics.totalEntries}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">Reflections preserved in vault</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Words Penned
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                        <Icon name="sparkles" size={16} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold font-serif text-slate-900 dark:text-white mt-2">
+                      {analytics.totalWords.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">~{analytics.avgWords} words per reflection</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Journaling Streak
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <span className="text-base">🔥</span>
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold font-serif text-slate-900 dark:text-white mt-2">
+                      {analytics.streak} <span className="text-base font-sans font-normal text-slate-400">Days</span>
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">Consistency creates clarity</p>
+                  </div>
+
+                  <div className="glass-panel p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                        Dominant Mood
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <span className="text-base">
+                          {MOODS.find(m => m.id === analytics.dominantMood)?.emoji || '🧘'}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold font-serif text-slate-900 dark:text-white mt-2 capitalize">
+                      {analytics.dominantMood}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">Primary state of consciousness</p>
+                  </div>
+
+                </div>
+
+                {/* Mood Distribution Visual Bar Chart */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  
+                  {/* Mood Bar Breakdown */}
+                  <div className="glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                      <Icon name="chart" size={18} className="text-brand-500" />
+                      <span>Emotional Landscape (Mood Distribution)</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Aggregated from your journal entries using MongoDB aggregation algorithms.
+                    </p>
+
+                    <div className="space-y-3 pt-2">
+                      {MOODS.map(m => {
+                        const count = analytics.moodCounts[m.id] || 0;
+                        const percentage = analytics.totalEntries ? Math.round((count / analytics.totalEntries) * 100) : 0;
+                        return (
+                          <div key={m.id} className="space-y-1">
+                            <div className="flex justify-between text-xs font-medium">
+                              <span className="flex items-center gap-1.5">
+                                <span>{m.emoji}</span>
+                                <span>{m.label}</span>
+                              </span>
+                              <span className="text-slate-500 dark:text-slate-400">
+                                {count} entries ({percentage}%)
+                              </span>
+                            </div>
+                            <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full bg-gradient-to-r ${m.color} transition-all duration-1000`}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Category Breakdown */}
+                  <div className="glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                      <Icon name="tag" size={18} className="text-indigo-500" />
+                      <span>Life Themes (Category Distribution)</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Balance across various spheres of work, ideas, personal growth, and gratitude.
+                    </p>
+
+                    <div className="space-y-3 pt-2">
+                      {CATEGORIES.filter(c => c !== 'All').map(cat => {
+                        const count = analytics.categoryCounts[cat] || 0;
+                        const percentage = analytics.totalEntries ? Math.round((count / analytics.totalEntries) * 100) : 0;
+                        return (
+                          <div key={cat} className="space-y-1">
+                            <div className="flex justify-between text-xs font-medium">
+                              <span>{cat}</span>
+                              <span className="text-slate-500 dark:text-slate-400">
+                                {count} entries ({percentage}%)
+                              </span>
+                            </div>
+                            <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-brand-600 to-indigo-500 transition-all duration-1000"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* VIEW 3: FULL-STACK ARCHITECTURE & ALL TOPICS SHOWCASE */}
+            {activeView === 'architecture' && (
+              <ArchitectureShowcase />
+            )}
+
+            {/* VIEW 4: LIVE REST API & MONGODB QUERY SIMULATOR */}
+            {activeView === 'api-tester' && (
+              <ApiAndMongoSimulator entries={entries} />
+            )}
+
+          </main>
+
+          {/* --- PIN SETUP / MANAGE MODAL --- */}
+          {showPinModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <div className="glass-panel p-6 sm:p-8 rounded-3xl max-w-sm w-full space-y-4 shadow-2xl border border-white/20">
+                <div className="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto">
+                  <Icon name="lock" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-center text-slate-900 dark:text-white">
+                  {pin ? 'Manage Privacy PIN' : 'Set 4-Digit Security PIN'}
+                </h3>
+                <p className="text-xs text-slate-500 text-center">
+                  {pin
+                    ? 'Your journal is currently password-protected. You can change your PIN or disable protection below.'
+                    : 'Configure a 4-digit code to keep your personal journal reflections private from prying eyes.'}
+                </p>
+
+                <div className="space-y-3">
+                  <input
+                    type="password"
+                    maxLength="4"
+                    value={newPinInput}
+                    onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter 4 digits (e.g. 1234)"
+                    className="w-full text-center tracking-widest text-lg py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+
+                  <button
+                    onClick={handleSavePin}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-medium text-xs shadow-md"
+                  >
+                    Save Security PIN
+                  </button>
+
+                  {pin && (
+                    <button
+                      onClick={handleRemovePin}
+                      className="w-full py-2 rounded-xl border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 font-medium text-xs"
+                    >
+                      Disable PIN Protection
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setShowPinModal(false)}
+                    className="w-full py-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- MONGODB & BACKEND CONNECTION MODAL --- */}
+          {showMongoModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <div className="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full space-y-5 shadow-2xl border border-white/20">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-800/60">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                      <Icon name="database" size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        MongoDB & Backend Connection
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        React Frontend ➔ Node.js API ➔ MongoDB
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowMongoModal(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Connection Status Box */}
+                <div className={`p-4 rounded-2xl border text-xs space-y-2 ${
+                  mongoStatus === 'connected'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300'
+                }`}>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${mongoStatus === 'connected' ? 'bg-emerald-500 animate-ping' : 'bg-amber-500'}`} />
+                      <span>{mongoStatus === 'connected' ? 'Connected to MongoDB Database!' : 'Running in Local Storage Mode (Offline)'}</span>
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-black/10 dark:bg-white/10 font-mono">
+                      {mongoStatus === 'connected' ? 'LIVE SYNC' : 'STANDALONE'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed opacity-90">
+                    {mongoStatus === 'connected'
+                      ? `Your Node.js Express backend is running and connected to MongoDB (${mongoServerInfo?.service || 'digital_journal_db'}). All CRUD requests and analytics are operating on MongoDB.`
+                      : 'Your browser cannot reach the Node.js backend yet. The app is currently using safe in-browser LocalStorage so you can write and save entries with zero downtime.'}
+                  </p>
+                </div>
+
+                {/* Backend URL Input & Test Button */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Backend API Endpoint URL
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={backendUrl}
+                      onChange={(e) => setBackendUrl(e.target.value)}
+                      placeholder="http://localhost:5000"
+                      className="flex-1 py-2 px-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                    <button
+                      onClick={() => checkMongoConnection()}
+                      disabled={isTestingMongo}
+                      className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isTestingMongo ? 'Testing...' : 'Check Connection'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick 2-Step Connection Guide */}
+                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                    How to connect to MongoDB in 2 steps:
+                  </span>
+                  <div className="space-y-1.5 text-slate-600 dark:text-slate-400 text-[11px]">
+                    <p>
+                      <strong>1. Set your MongoDB URI:</strong> Open <code>backend/.env</code> in VS Code and set your <code>MONGO_URI</code> (e.g. from MongoDB Atlas or local <code>mongodb://localhost:27017/digital_journal_db</code>).
+                    </p>
+                    <p>
+                      <strong>2. Start Node.js Server:</strong> In your VS Code terminal, run:
+                      <code className="block mt-1 p-1.5 rounded bg-slate-900 text-slate-200 font-mono">
+                        cd backend &amp;&amp; npm install &amp;&amp; npm start
+                      </code>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions: Sync to Mongo or Close */}
+                <div className="flex items-center justify-between pt-2">
+                  {mongoStatus === 'connected' ? (
+                    <button
+                      onClick={handleSyncToMongo}
+                      disabled={isSyncing}
+                      className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md flex items-center gap-1.5"
+                    >
+                      <Icon name="check" size={14} />
+                      <span>{isSyncing ? 'Syncing...' : 'Sync Local Entries to MongoDB'}</span>
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">
+                      Entries are securely saved locally in the meantime.
+                    </span>
+                  )}
+
+                  <button
+                    onClick={() => setShowMongoModal(false)}
+                    className="py-2 px-4 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs"
+                  >
+                    Done
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* --- FLOATING TOAST NOTIFICATION --- */}
+          {toast && (
+            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 py-3 px-4 rounded-2xl bg-slate-900/90 dark:bg-white/95 text-white dark:text-slate-900 shadow-2xl backdrop-blur-md text-xs font-medium animate-bounce border border-white/10">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>{toast.message}</span>
+            </div>
+          )}
+
+          {/* --- FOOTER --- */}
+          <footer className="mt-auto py-6 px-4 text-center text-xs text-slate-500 dark:text-slate-400 border-t border-slate-200/60 dark:border-slate-800/60">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p>
+                <strong>Digital Journal Application</strong> — Crafted with modern HTML5, CSS3, JavaScript (ES6+), React.js, Node.js & MongoDB.
+              </p>
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1 text-emerald-500 font-mono text-[11px]">
+                  ● REST API Online
+                </span>
+                <span>•</span>
+                <span className="font-mono text-[11px]">MongoDB 8.0 Ready</span>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      );
+    }
+
+    // --- SUB-COMPONENT: ARCHITECTURE & ALL TOPICS SHOWCASE ---
+    function ArchitectureShowcase() {
+      const [activeTopic, setActiveTopic] = useState('react');
+
+      const TOPIC_DETAILS = {
+        html: {
+          title: "HTML5 Semantic Standards & Accessibility",
+          badge: "HTML5",
+          color: "from-orange-500 to-amber-600",
+          summary: "Semantic structure designed for high readability, responsive viewports, ARIA accessibility, and modern search engine optimization.",
+          points: [
+            "Semantic landmark tags: <header>, <main>, <nav>, <article>, <aside>, <section>, and <footer>",
+            "Accessible form inputs, labels, and aria attributes for screen readers",
+            "Responsive viewport meta tags ensuring fluid rendering on phones, tablets, and high-DPI desktop screens",
+            "Dynamic document title updating and structured microdata support"
+          ],
+          codeSnippet: `<!-- Semantic HTML5 Architecture -->
+<header role="banner" class="glass-panel">
+  <nav role="navigation" aria-label="Journal Navigation">
+    <button aria-label="Create New Journal Entry">New Entry</button>
+  </nav>
+</header>
+
+<main role="main">
+  <article itemscope itemtype="https://schema.org/BlogPosting">
+    <h1 itemprop="headline">Scalable Microservices Architecture</h1>
+    <time itemprop="datePublished" datetime="2026-10-28">October 28, 2026</time>
+    <div itemprop="articleBody">Journal reflection body...</div>
+  </article>
+</main>`
+        },
+        css: {
+          title: "Modern CSS3, Glassmorphism & Responsive Design",
+          badge: "CSS3",
+          color: "from-blue-500 to-cyan-600",
+          summary: "Design system built on CSS custom variables, backdrop blur filters, Flexbox and CSS Grid layouts, and smooth dark/light transitions.",
+          points: [
+            "CSS Custom Properties (--brand-500, --card-bg) for zero-flash dark/light theme switching",
+            "Backdrop-filter blur effects creating aesthetic frosted glass surfaces",
+            "CSS Grid for responsive 12-column layouts adapting seamlessly from mobile to wide monitors",
+            "Smooth GPU-accelerated keyframe animations for floating elements and micro-interactions"
+          ],
+          codeSnippet: `/* Modern CSS Design System */
+:root {
+  --brand-primary: #8b5cf6;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.8);
+}
+
+.dark {
+  --glass-bg: rgba(17, 24, 39, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}`
+        },
+        javascript: {
+          title: "Modern JavaScript (ES6+) & Web APIs",
+          badge: "JavaScript ES6+",
+          color: "from-yellow-500 to-amber-600",
+          summary: "Modern JavaScript utilizing functional array pipelines, asynchronous promises, Web Speech API, LocalStorage persistence, and Clipboard APIs.",
+          points: [
+            "Asynchronous async/await flow control with comprehensive try/catch error boundaries",
+            "Browser Web Speech API (SpeechRecognition) for live hands-free voice dictation journaling",
+            "Blob and URL.createObjectURL for dynamic client-side file generation (.md, .json)",
+            "High-performance functional programming with Array.prototype.reduce, map, and filter"
+          ],
+          codeSnippet: `// Web Speech API Voice Dictation in ES6+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  
+  recognition.onresult = (event) => {
+    let transcript = '';
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        transcript += event.results[i][0].transcript + ' ';
+      }
+    }
+    // Update state immutably
+    updateJournalContent(prev => prev + transcript);
+  };
+}`
+        },
+        react: {
+          title: "React.js Component Hierarchy & Hooks",
+          badge: "React 18",
+          color: "from-cyan-500 to-blue-600",
+          summary: "Declarative UI with unidirectional data flow, custom hooks, memoization (useMemo, useCallback), and Virtual DOM reconciliation.",
+          points: [
+            "Hooks architecture: useState for local states, useEffect for theme and storage sync",
+            "useMemo for debounced full-text search and complex mood analytics calculations",
+            "useCallback for memoized handler references preventing unnecessary child re-renders",
+            "Single-source-of-truth state management with immutable updates"
+          ],
+          codeSnippet: `// React 18 Custom State Hook & Memoization
+const [entries, setEntries] = useState(() => {
+  const saved = localStorage.getItem('aura_journal_entries');
+  return saved ? JSON.parse(saved) : INITIAL_ENTRIES;
+});
+
+// Memoized calculation of mood distribution
+const moodAnalytics = useMemo(() => {
+  return entries.reduce((acc, entry) => {
+    acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+    return acc;
+  }, {});
+}, [entries]);`
+        },
+        node: {
+          title: "Node.js & Express RESTful API",
+          badge: "Node.js",
+          color: "from-emerald-500 to-green-600",
+          summary: "Production-grade backend built with Node.js and Express featuring JWT authentication, CORS, Helmet security headers, and modular routing.",
+          points: [
+            "Modular MVC (Model-View-Controller) structure in backend/controllers/journalController.js",
+            "Stateless authentication pipeline using JSON Web Tokens (JWT) and Bcrypt password hashing",
+            "Security hardening with Helmet HTTP headers, CORS whitelisting, and request rate limiting",
+            "Centralized error handling middleware with distinct development/production stack traces"
+          ],
+          codeSnippet: `// Express.js REST API Endpoint Architecture
+const express = require('express');
+const router = express.Router();
+const { protect } = require('../middleware/auth');
+const { getJournalEntries, createJournalEntry } = require('../controllers/journalController');
+
+// Secure protected routes
+router.use(protect);
+router.route('/')
+  .get(getJournalEntries)
+  .post(createJournalEntry);
+
+module.exports = router;`
+        },
+        mongodb: {
+          title: "MongoDB & Mongoose Schema Architecture",
+          badge: "MongoDB",
+          color: "from-green-600 to-teal-700",
+          summary: "Scalable document database with Mongoose schemas, compound indexes, full-text search indexes, and multi-stage aggregation pipelines.",
+          points: [
+            "Mongoose Schema validation with enums for mood, categories, and weather",
+            "Compound index { user: 1, entryDate: -1 } for sub-millisecond sorted retrieval",
+            "Text index { title: 'text', content: 'text', tags: 'text' } for instant full-text search",
+            "Multi-stage aggregation pipelines ($match, $group, $sort) for streak and mood statistics"
+          ],
+          codeSnippet: `// MongoDB Mongoose Schema & Aggregation Pipeline
+const JournalSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true, trim: true, maxlength: 150 },
+  content: { type: String, required: true },
+  mood: { type: String, enum: ['joyful', 'peaceful', 'inspired', 'grateful', 'energetic'], default: 'peaceful' },
+  wordCount: Number,
+  entryDate: { type: Date, default: Date.now, index: true }
+}, { timestamps: true });
+
+// Aggregation Pipeline for Mood Breakdown
+const moodStats = await Journal.aggregate([
+  { $match: { user: userId } },
+  { $group: { _id: '$mood', count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+]);`
+        }
+      };
+
+      const curr = TOPIC_DETAILS[activeTopic];
+
+      return (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+            <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+              Full-Stack Architecture & Technology Integration
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-3xl leading-relaxed">
+              This Digital Journal Application brings together the full modern web stack: <strong>HTML5, CSS3, JavaScript (ES6+), React.js, Node.js, and MongoDB</strong> into a unified, high-performance ecosystem. Select a topic below to inspect the architectural specifications and production code.
+            </p>
+
+            {/* Topic Navigation Tabs */}
+            <div className="flex flex-wrap items-center gap-2 mt-6">
+              {Object.keys(TOPIC_DETAILS).map(key => {
+                const item = TOPIC_DETAILS[key];
+                const isActive = activeTopic === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTopic(key)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all transform active:scale-95 ${
+                      isActive
+                        ? `bg-gradient-to-r ${item.color} text-white shadow-md shadow-brand-500/20`
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>{item.badge}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Topic Details Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left: Summary & Bullet Points */}
+            <div className="lg:col-span-5 glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <span className={`text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r ${curr.color} text-white`}>
+                {curr.badge} Deep-Dive
+              </span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {curr.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {curr.summary}
+              </p>
+
+              <div className="space-y-2.5 pt-3 border-t border-slate-200/60 dark:border-slate-800/60">
+                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Key Technical Capabilities
+                </h4>
+                {curr.points.map((pt, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <span className="text-emerald-500 font-bold">✓</span>
+                    <span>{pt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Code Sample */}
+            <div className="lg:col-span-7 glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+              <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+                <span className="font-mono text-slate-400">Implementation Blueprint</span>
+                <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-500">
+                  Production Source
+                </span>
+              </div>
+              <pre className="p-4 rounded-2xl bg-slate-900 text-slate-200 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">
+                <code>{curr.codeSnippet}</code>
+              </pre>
+            </div>
+
+          </div>
+
+          {/* Full-Stack Architectural Diagram */}
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <Icon name="layers" size={20} className="text-brand-500" />
+              <span>Full-Stack MERN Architecture Workflow</span>
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              How user interactions flow from HTML5/React down to Node.js and MongoDB Atlas.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 text-center">
+              
+              <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 mx-auto flex items-center justify-center font-bold">
+                  UI
+                </div>
+                <h4 className="font-bold text-xs">1. HTML5 & CSS3</h4>
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  Semantic document canvas, glassmorphic themes, fluid typography, and dark/light modes.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 mx-auto flex items-center justify-center font-bold">
+                  ⚛️
+                </div>
+                <h4 className="font-bold text-xs">2. React.js & JavaScript</h4>
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  Component state, custom hooks, Web Speech API dictation, and real-time search filters.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center font-bold">
+                  🌐
+                </div>
+                <h4 className="font-bold text-xs">3. Node.js & Express</h4>
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  RESTful routing, JWT bearer auth middleware, Helmet security, and error dispatchers.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-500 mx-auto flex items-center justify-center font-bold">
+                  🍃
+                </div>
+                <h4 className="font-bold text-xs">4. MongoDB & Mongoose</h4>
+                <p className="text-[11px] text-slate-500 leading-normal">
+                  Compound index retrieval, schema validations, and multi-stage mood aggregation pipelines.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- SUB-COMPONENT: LIVE REST API & MONGODB QUERY SIMULATOR ---
+    function ApiAndMongoSimulator({ entries }) {
+      const [selectedEndpoint, setSelectedEndpoint] = useState('GET_ALL');
+      const [responseLatency, setResponseLatency] = useState(14);
+
+      const ENDPOINTS = {
+        GET_ALL: {
+          method: 'GET',
+          path: '/api/v1/journals',
+          description: 'Fetch all journals with query filters and pagination',
+          mongoQuery: 'db.journals.find({ user: ObjectId("665a...") }).sort({ entryDate: -1 }).limit(10)',
+          response: {
+            success: true,
+            total: entries.length,
+            count: entries.length,
+            data: entries.map(e => ({
+              _id: e.id,
+              title: e.title,
+              mood: e.mood,
+              category: e.category,
+              wordCount: e.wordCount,
+              entryDate: e.entryDate
+            }))
+          }
+        },
+        CREATE: {
+          method: 'POST',
+          path: '/api/v1/journals',
+          description: 'Create a new journal entry with mood and tags',
+          mongoQuery: 'db.journals.insertOne({ title: "New Memory", content: "...", mood: "inspired", user: ObjectId("665a...") })',
+          response: {
+            success: true,
+            message: 'Journal entry created successfully',
+            data: {
+              _id: 'entry-' + Date.now(),
+              title: 'Evening Breakthrough',
+              mood: 'inspired',
+              category: 'Ideas',
+              wordCount: 142,
+              createdAt: new Date().toISOString()
+            }
+          }
+        },
+        ANALYTICS: {
+          method: 'GET',
+          path: '/api/v1/journals/analytics/summary',
+          description: 'MongoDB multi-stage aggregation pipeline calculating mood stats and streaks',
+          mongoQuery: `db.journals.aggregate([
+  { $match: { user: ObjectId("665a...") } },
+  { $group: { _id: "$mood", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+])`,
+          response: {
+            success: true,
+            analytics: {
+              totalEntries: entries.length,
+              totalWords: entries.reduce((a, b) => a + (b.wordCount || 0), 0),
+              currentStreakDays: 4,
+              moodDistribution: [
+                { _id: 'peaceful', count: 3 },
+                { _id: 'inspired', count: 2 },
+                { _id: 'grateful', count: 1 }
+              ]
+            }
+          }
+        },
+        TOGGLE_FAV: {
+          method: 'PATCH',
+          path: '/api/v1/journals/:id/favorite',
+          description: 'Atomic update toggling entry favorite bookmark',
+          mongoQuery: 'db.journals.updateOne({ _id: ObjectId("...") }, { $set: { isFavorite: true } })',
+          response: {
+            success: true,
+            message: 'Journal marked as favorite',
+            isFavorite: true
+          }
+        }
+      };
+
+      const curr = ENDPOINTS[selectedEndpoint];
+
+      return (
+        <div className="space-y-6">
+          <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80">
+            <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+              Interactive REST API & MongoDB Simulator
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              Test live simulated HTTP requests to the Node.js Express backend and preview the corresponding MongoDB Mongoose queries and database aggregations.
+            </p>
+
+            {/* Endpoint Selector Tabs */}
+            <div className="flex flex-wrap items-center gap-2 mt-6">
+              {Object.keys(ENDPOINTS).map(key => {
+                const ep = ENDPOINTS[key];
+                const isSelected = selectedEndpoint === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSelectedEndpoint(key);
+                      setResponseLatency(Math.floor(Math.random() * 15) + 8);
+                    }}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono transition-all ${
+                      isSelected
+                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-md'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                      ep.method === 'GET' ? 'bg-blue-500 text-white' :
+                      ep.method === 'POST' ? 'bg-emerald-500 text-white' :
+                      ep.method === 'PATCH' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
+                    }`}>
+                      {ep.method}
+                    </span>
+                    <span>{ep.path}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left: Endpoint Spec & MongoDB Query */}
+            <div className="lg:col-span-5 glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Target Endpoint
+                </span>
+                <span className="text-xs font-mono text-emerald-500 flex items-center gap-1">
+                  ● 200 OK ({responseLatency}ms)
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono text-xs text-slate-800 dark:text-slate-200">
+                <span className="text-brand-500 font-bold mr-2">{curr.method}</span>
+                <span>{curr.path}</span>
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {curr.description}
+              </p>
+
+              <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/60 space-y-2">
+                <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                  <span>🍃 MongoDB Operation</span>
+                  <span className="text-[11px] text-teal-400">Mongoose 8.x</span>
+                </div>
+                <pre className="p-3.5 rounded-xl bg-slate-900 text-teal-300 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">
+                  <code>{curr.mongoQuery}</code>
+                </pre>
+              </div>
+            </div>
+
+            {/* Right: JSON Response Payload */}
+            <div className="lg:col-span-7 glass-panel p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+              <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+                <span className="font-mono text-slate-400">HTTP Response Body (application/json)</span>
+                <span className="text-[11px] font-mono text-slate-400">Content-Length: ~{JSON.stringify(curr.response).length} bytes</span>
+              </div>
+
+              <pre className="p-4 rounded-2xl bg-slate-950 text-slate-200 font-mono text-xs max-h-[380px] overflow-y-auto leading-relaxed border border-slate-800 shadow-inner">
+                <code>{JSON.stringify(curr.response, null, 2)}</code>
+              </pre>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
